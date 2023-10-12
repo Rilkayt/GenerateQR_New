@@ -99,8 +99,8 @@ func generateQR(text string, label string, kode string) (*image.RGBA, error) {
 	}
 
 	baseBackground, _, _ := image.Decode(importImg)
-	fmt.Println(baseBackground.Bounds().Dx())
-	fmt.Println(baseBackground.Bounds().Dy())
+	// fmt.Println(baseBackground.Bounds().Dx()) => 998
+	// fmt.Println(baseBackground.Bounds().Dy()) => 1228
 	qrImage := qrCode.Image(baseBackground.Bounds().Dx() - 200)
 	qrImageDraw := image.NewRGBA(baseBackground.Bounds())
 
