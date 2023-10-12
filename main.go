@@ -29,8 +29,9 @@ func view(w http.ResponseWriter, r *http.Request) {
 
 	text := r.FormValue("text")
 	label := r.FormValue("label")
+	kode := r.FormValue("kode")
 
-	qr, err := generateQR(text, label)
+	qr, err := generateQR(text, label, kode)
 	if err != nil {
 		http.Error(w, "Error Generate QR", http.StatusInternalServerError)
 		return
@@ -45,10 +46,11 @@ func download(w http.ResponseWriter, r *http.Request) {
 
 	text := r.FormValue("text")
 	label := r.FormValue("label")
+	kode := r.FormValue("kode")
 
 	fileName := label + ".jpeg"
 
-	qr, _ := generateQR(text, label)
+	qr, _ := generateQR(text, label, kode)
 
 	w.Header().Set("Content-Disposition", "attachment; filename=smartlink.jpeg")
 	w.Header().Set("Content-Type", "Image/image")
@@ -57,35 +59,36 @@ func download(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fileName)
 }
 
-func generateQR(text string, label string) (*image.RGBA, error) {
+func generateQR(text string, label string, kode string) (*image.RGBA, error) {
 
-	qrCode, err := qrcode.New(text, qrcode.Medium)
+	qrCode, err := qrcode.New(text, qrcode.Highest)
 	if err != nil {
 		return nil, err
 	}
 
+	qrCode.DisableBorder = true
 	labelWidth := len(label) * 7
-	labelImg1, _, err_labelImg1 := makeLabelImg(label, labelWidth, 37, "Lato-Black.ttf", 500, "label1")
+	labelImg1, _, err_labelImg1 := makeLabelImg(label, labelWidth, 37, "Helvetica-Font/Helvetica-Bold.ttf", 500, "label1")
 	if err_labelImg1 != nil {
 		return nil, err_labelImg1
 	}
 
-	labelImg2, widhtLabel, err_labelImg2 := makeLabelImg("QRIS by NOBU", labelWidth, 37, "Lato-Medium.ttf", 300, "label2")
+	labelImg2, widhtLabel, err_labelImg2 := makeLabelImg("QRIS by NOBU", labelWidth, 37, "Helvetica-Font/Helvetica-Bold.ttf", 300, "label2")
 	if err_labelImg2 != nil {
 		return nil, err_labelImg2
 	}
 
-	labelImg3, _, err_labelImg3 := makeLabelImg("AIOT Laundry System", labelWidth, 40, "Lato-Black.ttf", 500, "label3")
+	labelImg3, _, err_labelImg3 := makeLabelImg("AIOT Laundry System", labelWidth, 40, "Helvetica-Font/Helvetica.ttf", 500, "label3")
 	if err_labelImg3 != nil {
 		return nil, err_labelImg3
 	}
 
-	labelImg4, _, err_labelImg4 := makeLabelImg("by Smartlink.id", labelWidth, 40, "Lato-Medium.ttf", 500, "label4")
+	labelImg4, _, err_labelImg4 := makeLabelImg("by Smartlink.id", labelWidth, 40, "Helvetica-Font/Helvetica-Bold.ttf", 500, "label4")
 	if err_labelImg4 != nil {
 		return nil, err_labelImg4
 	}
 
-	labelImg5, widhtLabel5, err_labelImg5 := makeLabelImg("W01", labelWidth, 100, "Lato-Black.ttf", 500, "label5")
+	labelImg5, widhtLabel5, err_labelImg5 := makeLabelImg(kode, labelWidth, 100, "Helvetica-Font/Helvetica-Bold.ttf", 500, "label5")
 	if err_labelImg5 != nil {
 		return nil, err_labelImg5
 	}
@@ -98,18 +101,18 @@ func generateQR(text string, label string) (*image.RGBA, error) {
 	baseBackground, _, _ := image.Decode(importImg)
 	fmt.Println(baseBackground.Bounds().Dx())
 	fmt.Println(baseBackground.Bounds().Dy())
-	qrImage := qrCode.Image(baseBackground.Bounds().Dx() - 100)
+	qrImage := qrCode.Image(baseBackground.Bounds().Dx() - 200)
 	qrImageDraw := image.NewRGBA(baseBackground.Bounds())
 
-	x := (baseBackground.Bounds().Dx() - (baseBackground.Bounds().Dx() - 100)) / 2
-	y := (baseBackground.Bounds().Dx() - (baseBackground.Bounds().Dx() - 80)) / 2
+	x := (baseBackground.Bounds().Dx() - (baseBackground.Bounds().Dx() - 200)) / 2
+	y := (baseBackground.Bounds().Dx() - (baseBackground.Bounds().Dx() - 150)) / 2
 	draw.Draw(qrImageDraw, qrImageDraw.Bounds(), baseBackground, image.Point{}, draw.Over)
 	draw.Draw(qrImageDraw, qrImage.Bounds().Add(image.Pt(x, y)), qrImage, image.Point{}, draw.Over)
-	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(100, qrImageDraw.Bounds().Dy()-315)), labelImg1, image.Point{}, draw.Over)
-	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(qrImageDraw.Bounds().Dx()-(widhtLabel+100), qrImageDraw.Bounds().Dy()-315)), labelImg2, image.Point{}, draw.Over)
+	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(97, qrImageDraw.Bounds().Dy()-315)), labelImg1, image.Point{}, draw.Over)
+	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(qrImageDraw.Bounds().Dx()-(widhtLabel+97), qrImageDraw.Bounds().Dy()-315)), labelImg2, image.Point{}, draw.Over)
 	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(50, qrImageDraw.Bounds().Dy()-170)), labelImg3, image.Point{}, draw.Over)
 	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(50, qrImageDraw.Bounds().Dy()-120)), labelImg4, image.Point{}, draw.Over)
-	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(baseBackground.Bounds().Dx()-(widhtLabel5+50), (baseBackground.Bounds().Dy()-(widhtLabel5-50)))), labelImg5, image.Point{}, draw.Over)
+	draw.Draw(qrImageDraw, qrImageDraw.Bounds().Add(image.Pt(qrImageDraw.Bounds().Dx()-(widhtLabel5+78), 1045)), labelImg5, image.Point{}, draw.Over)
 	return qrImageDraw, nil
 }
 
