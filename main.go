@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/golang/freetype/truetype"
 	"github.com/skip2/go-qrcode"
@@ -32,7 +33,9 @@ func view(w http.ResponseWriter, r *http.Request) {
 	kode := r.FormValue("kode")
 	tipe := r.FormValue("tipe")
 
-	qr, err := generateQR(text, label, kode, tipe)
+	tipe_lowercase := strings.ToLower(tipe)
+
+	qr, err := generateQR(text, label, kode, tipe_lowercase)
 	if err != nil {
 		http.Error(w, "Error Generate QR", http.StatusInternalServerError)
 		return
@@ -50,9 +53,11 @@ func download(w http.ResponseWriter, r *http.Request) {
 	kode := r.FormValue("kode")
 	tipe := r.FormValue("tipe")
 
+	tipe_lowercase := strings.ToLower(tipe)
+
 	fileName := label + ".jpeg"
 
-	qr, _ := generateQR(text, label, kode, tipe)
+	qr, _ := generateQR(text, label, kode, tipe_lowercase)
 
 	w.Header().Set("Content-Disposition", "attachment; filename=smartlink.jpeg")
 	w.Header().Set("Content-Type", "Image/image")
@@ -96,6 +101,7 @@ func generateQR(text string, label string, kode string, tipe string) (*image.RGB
 	}
 
 	importImg, err_importImg := os.Open(tipe + ".png")
+	fmt.Println(err_importImg)
 	if err_importImg != nil {
 		return nil, err
 	}
