@@ -30,8 +30,9 @@ func view(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	label := r.FormValue("label")
 	kode := r.FormValue("kode")
+	tipe := r.FormValue("tipe")
 
-	qr, err := generateQR(text, label, kode)
+	qr, err := generateQR(text, label, kode, tipe)
 	if err != nil {
 		http.Error(w, "Error Generate QR", http.StatusInternalServerError)
 		return
@@ -47,10 +48,11 @@ func download(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	label := r.FormValue("label")
 	kode := r.FormValue("kode")
+	tipe := r.FormValue("tipe")
 
 	fileName := label + ".jpeg"
 
-	qr, _ := generateQR(text, label, kode)
+	qr, _ := generateQR(text, label, kode, tipe)
 
 	w.Header().Set("Content-Disposition", "attachment; filename=smartlink.jpeg")
 	w.Header().Set("Content-Type", "Image/image")
@@ -59,7 +61,7 @@ func download(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fileName)
 }
 
-func generateQR(text string, label string, kode string) (*image.RGBA, error) {
+func generateQR(text string, label string, kode string, tipe string) (*image.RGBA, error) {
 
 	qrCode, err := qrcode.New(text, qrcode.Highest)
 	if err != nil {
@@ -93,7 +95,7 @@ func generateQR(text string, label string, kode string) (*image.RGBA, error) {
 		return nil, err_labelImg5
 	}
 
-	importImg, err_importImg := os.Open("washer.png")
+	importImg, err_importImg := os.Open(tipe + ".png")
 	if err_importImg != nil {
 		return nil, err
 	}
